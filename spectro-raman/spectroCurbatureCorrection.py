@@ -21,6 +21,7 @@ class SpectrumProcessor:
         self.gaussianPeakPos = []
         self.maximumPeakPos = []
         self.gaussianPixelDeviationX = []
+        self.fittedGaussianPixelDeviationX = []
         self.maximumPixelDeviationX = []
 
         self.shiftedImage = None
@@ -32,17 +33,16 @@ class SpectrumProcessor:
         self.shiftedPILImage.save(path, compression='tif')
 
     def show_image_with_fit(self):
-        self.uncurve_spectrum_image()
         plt.imshow(self.imArray, cmap='gray')
         print(len(np.linspace(self.curbaturePeakZoneY[0], self.curbaturePeakZoneY[1], self.curbaturePeakZoneY[1]-self.curbaturePeakZoneY[0])))
         print(len(self.gaussianPeakPos))
         print(self.gaussianPeakPos)
         print(np.linspace(self.curbaturePeakZoneY[0], self.curbaturePeakZoneY[1], self.curbaturePeakZoneY[1]-self.curbaturePeakZoneY[0]))
 
-        plt.scatter([self.gaussianPeakPos], [np.linspace(self.curbaturePeakZoneY[0], self.curbaturePeakZoneY[1], self.curbaturePeakZoneY[1]-self.curbaturePeakZoneY[0])], c='r', s=2, label="Gaussian fit")
+        plt.scatter([self.gaussianPeakPos], [np.linspace(self.curbaturePeakZoneY[0], self.curbaturePeakZoneY[1], self.curbaturePeakZoneY[1]-self.curbaturePeakZoneY[0])], c='r', s=1, label="Gaussian fit")
         plt.scatter([self.maximumPeakPos], [np.linspace(self.curbaturePeakZoneY[0], self.curbaturePeakZoneY[1],
                                                          self.curbaturePeakZoneY[1] - self.curbaturePeakZoneY[0])],
-                    c='b', s=2, label="Gaussian fit")
+                    c='b', s=1, label="Gaussian fit")
 
         plt.show()
         # TODO make a superposition of points and image
@@ -72,7 +72,7 @@ class SpectrumProcessor:
     def find_peak_position(self):
         for ypos in range(self.curbaturePeakZoneY[0], self.curbaturePeakZoneY[1]):
 
-            sectionyData = self.imArray[ypos][self.curbaturePeakZoneX[0]:self.curbaturePeakZoneX[1]]   # +1 because it doesn't include the given index
+            sectionyData = self.imArray[ypos][self.curbaturePeakZoneX[0]:self.curbaturePeakZoneX[1]+1]   # +1 because it doesn't include the given index
             sectionxData = np.linspace(self.curbaturePeakZoneX[0], self.curbaturePeakZoneX[1], len(sectionyData))
             pars, cov = curve_fit(f=self.gaussian, xdata=sectionxData, ydata=sectionyData,
                                   p0=[1, sectionxData[round(len(sectionxData)/2)], 1], bounds=(-np.inf, np.inf))
@@ -97,7 +97,7 @@ class SpectrumProcessor:
             print(self.maximumPixelDeviationX)
             #print('Xdeviation:', xDev)
 
-    def polyfit_peak_deviations(self):
+    def quadraticfit_peak_deviations(self):
         plt.plot(np.linspace(0,len(self.maximumPixelDeviationX), len(self.maximumPixelDeviationX)), self.maximumPixelDeviationX)
 
         x = np.linspace(0, len(self.maximumPixelDeviationX), len(self.maximumPixelDeviationX))
@@ -149,12 +149,12 @@ class SpectrumProcessor:
         return a * np.exp(-np.power(x - b, 2) / (2 * np.power(c, 2)))
 
     @staticmethod
-    def parabolic(x, a, b):
-        return a*(x-b)**2
+    def parabolic(x, a, b, c):
+        return a*x**2 + b*x + c
 
 
 if __name__ == "__main__":
     PICorrector = SpectrumProcessor('data/glycerol_06_06_2020_2.tif')
-    PICorrector.uncurve_spectrum_image([620, 670], [0, 398])
-
+    PICorrector.uncurve_spectrum_image([620, 700], [0, 398])
+    PICorrector.show_image_with_fit()
 
