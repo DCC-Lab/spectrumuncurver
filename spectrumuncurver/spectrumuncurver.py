@@ -3,8 +3,9 @@ from PIL import Image
 from scipy.optimize import curve_fit
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from tkinter.filedialog import asksaveasfilename
-from unittest import mock
+from unittest.mock import patch
 import io
 import logging
 
@@ -15,16 +16,17 @@ class SpectrumUncurver:
 
     def __init__(self):
         self.spectrumImagePath = None
-        self.curbaturePeakZoneX = None
+        self.curvaturePeakZoneX = None
         self.pixelList = None
-        self.curbaturePeakZoneY = None
+        self.curvaturePeakZoneY = None
         self.imPIL = None
         self.imMAT = None
         self.imArray = None
         self.imPlot = None
         self.method = 'maximum'
-        self.figure, self.ax = plt.subplots(1, 1)
-
+        self.figure = plt.Figure()
+        self.ax = self.figure.gca()
+        self.canvas = FigureCanvas(self.figure)
 
         self.gaussianPeakPos = []
         self.maximumPeakPos = []
@@ -40,9 +42,8 @@ class SpectrumUncurver:
     def save_image(self, imageFile:Image):
         generalErrorMessage = "File was not saved. "
         try:
-            self.shiftedPILImage = Image.fromarray(self.shiftedImage)
             path = asksaveasfilename()
-            self.shiftedPILImage.save(path)
+            imageFile.save(path)
         except ValueError as e:
             if str(e) == "unknown file extension:":
                 log.error("unknown file extension." + generalErrorMessage)
@@ -62,13 +63,14 @@ class SpectrumUncurver:
                 log.error(generalErrorMessage + str(e))
 
     def save_image_with_fit(self):
-        with plt.show() as mock.Mock:
-            self.show_image_with_fit()
-            buf = io.BytesIO()
-            plt.savefig(buf, format='tif')
-            buf.seek(0)
-            self.fittedPILImage = Image.open(buf)
-            self.save_image(self.fittedPILImage)
+        # TODO: make the superposition of the fit work
+        pass
+        # with patch('matplotlib.pyplot.show') as p:
+        #     self.show_image_with_fit()
+        #     self.canvas.draw()
+        #     image = np.fromstring(self.canvas.tostring_rgb(), dtype='uint32').reshape((400, 1340, 3))
+        #     self.fittedPILImage = Image.fromarray(image)
+        #     self.save_image(self.fittedPILImage)
 
     def show_uncurved_image(self):
         self.shiftedPILImage = Image.fromarray(self.shiftedImage)
@@ -76,17 +78,17 @@ class SpectrumUncurver:
 
     def show_image_with_fit(self):
         self.ax.imshow(self.imArray, cmap='gray')
-        self.ax.scatter([self.gaussianPeakPos], [np.linspace(self.curbaturePeakZoneY[0], self.curbaturePeakZoneY[1], self.curbaturePeakZoneY[1]-self.curbaturePeakZoneY[0])], c='r', s=1, label="Gaussian fit")
-        self.ax.scatter([self.maximumPeakPos], [np.linspace(self.curbaturePeakZoneY[0], self.curbaturePeakZoneY[1],
-                                                         self.curbaturePeakZoneY[1] - self.curbaturePeakZoneY[0])],
-                    c='b', s=1, label="Gaussian fit")
+        self.ax.scatter([self.gaussianPeakPos], [np.linspace(self.curvaturePeakZoneY[0], self.curvaturePeakZoneY[1], self.curvaturePeakZoneY[1]-self.curvaturePeakZoneY[0])], c='r', s=0.2, label="Gaussian fit")
+        self.ax.scatter([self.maximumPeakPos], [np.linspace(self.curvaturePeakZoneY[0], self.curvaturePeakZoneY[1],
+                                                         self.curvaturePeakZoneY[1] - self.curvaturePeakZoneY[0])],
+                    c='b', s=0.2, label="Maximum fit")
         self.ax.legend()
         plt.show()
 
     def show_curved_image(self):
         self.imPIL.show()
 
-    def show_curabature(self):
+    def show_curvature(self):
         fig, ax = plt.subplot()
         ax.plot(self.gaussianPeakPos)
 
@@ -98,24 +100,25 @@ class SpectrumUncurver:
         self.imPlot = plt.imshow(self.imMAT)
 
     def uncurve_spectrum_image(self, xlim: List, ylim: List, method='maximum'):
-        self.curbaturePeakZoneX = xlim
-        self.curbaturePeakZoneY = ylim
-        self.pixelList = np.linspace(self.curbaturePeakZoneX[0], self.curbaturePeakZoneX[1], len(self.curbaturePeakZoneX)+1)
+        self.curvaturePeakZoneX = xlim
+        self.curvaturePeakZoneY = ylim
+        self.pixelList = np.linspace(self.curvaturePeakZoneX[0], self.curvaturePeakZoneX[1], len(self.curvaturePeakZoneX)+1)
         self.method = method
 
         self.find_peak_position_on_each_row()
         self.find_peak_deviations_on_each_row()
         if self.method == 'maximum':
-            result = self.correct_maximumDeviation_on_each_row()
+            result = self.correct_maximum_deviation_on_each_row()
+            return result
         elif self.method == 'gaussian':
-            result = self.correct_gaussianDeviation_on_each_row()
-        return result
+            result = self.correct_gaussian_deviation_on_each_row()
+            return result
 
     def find_peak_position_on_each_row(self):
-        for ypos in range(self.curbaturePeakZoneY[0], self.curbaturePeakZoneY[1]):
+        for ypos in range(self.curvaturePeakZoneY[0], self.curvaturePeakZoneY[1]):
 
-            sectionyData = self.imArray[ypos][self.curbaturePeakZoneX[0]:self.curbaturePeakZoneX[1]+1]   # +1 because it doesn't include the given index
-            sectionxData = np.linspace(self.curbaturePeakZoneX[0], self.curbaturePeakZoneX[1], len(sectionyData))
+            sectionyData = self.imArray[ypos][self.curvaturePeakZoneX[0]:self.curvaturePeakZoneX[1]+1]   # +1 because it doesn't include the given index
+            sectionxData = np.linspace(self.curvaturePeakZoneX[0], self.curvaturePeakZoneX[1], len(sectionyData))
             log.debug("sectionxData:", sectionxData)
             pars, cov = curve_fit(f=self.gaussian, xdata=sectionxData, ydata=sectionyData,
                                   p0=[1, sectionxData[round(len(sectionxData)/2)], 1], bounds=(-np.inf, np.inf))
@@ -132,7 +135,7 @@ class SpectrumUncurver:
         maxMidPos = self.maximumPeakPos[round(len(self.maximumPeakPos) / 2)]
         log.info("gaussian peak avg position:{}".format(gaussianMidPosition))
         
-        for ypos in range(self.curbaturePeakZoneY[1] - self.curbaturePeakZoneY[0]):
+        for ypos in range(self.curvaturePeakZoneY[1] - self.curvaturePeakZoneY[0]):
             xDevGaussian = self.gaussianPeakPos[ypos] - gaussianMidPosition
             self.gaussianPixelDeviationX.append(xDevGaussian)
             
@@ -140,9 +143,9 @@ class SpectrumUncurver:
             self.maximumPixelDeviationX.append(xDevMax)
         log.info("maximum peak average position:{}".format(self.maximumPixelDeviationX))
 
-    def correct_maximumDeviation_on_each_row(self):
+    def correct_maximum_deviation_on_each_row(self):
         self.shiftedImage = np.zeros(shape=(self.imPIL.height, self.imPIL.width))
-        for ypos, i in enumerate(range(self.curbaturePeakZoneY[0], self.curbaturePeakZoneY[1])):
+        for ypos, i in enumerate(range(self.curvaturePeakZoneY[0], self.curvaturePeakZoneY[1])):
             corr = -self.maximumPixelDeviationX[i]
             log.debug(self.imArray[ypos][0:-corr])
             if corr >= 1:
@@ -155,9 +158,9 @@ class SpectrumUncurver:
         self.shiftedPILImage = Image.fromarray(np.uint32(self.shiftedImage*63555))
         return self.shiftedImage
 
-    def correct_gaussianDeviation_on_each_row(self):
+    def correct_gaussian_deviation_on_each_row(self):
         self.shiftedImage = np.zeros(shape=(self.imPIL.height, self.imPIL.width))
-        for ypos, i in enumerate(range(self.curbaturePeakZoneY[0], self.curbaturePeakZoneY[1])):
+        for ypos, i in enumerate(range(self.curvaturePeakZoneY[0], self.curvaturePeakZoneY[1])):
             corr = -self.gaussianPixelDeviationX[i]
             log.debug(self.imArray[ypos][0:-corr])
 
@@ -200,5 +203,4 @@ if __name__ == "__main__":
     corrector = SpectrumUncurver()
     corrector.load_image('./data/glycerol_06_06_2020_2.tif')
     corrector.uncurve_spectrum_image([640, 700], [0, 400], 'gaussian')
-    corrector.show_curved_image()
-    corrector.show_uncurved_image()
+    corrector.save_image_with_fit()
