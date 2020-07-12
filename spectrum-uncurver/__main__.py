@@ -30,7 +30,8 @@ print(args.imagePath)
 print(args.xyPeakLimits)
 try:
 
-    spectrumUncurver = SpectrumUncurver(args.imagePath)
+    spectrumUncurver = SpectrumUncurver()
+    spectrumUncurver.load_image(args.imagePath)
     spectrumUncurver.uncurve_spectrum_image([args.xyPeakLimits[0], args.xyPeakLimits[1]], [args.xyPeakLimits[2], args.xyPeakLimits[3]], args.method)
 
     if args.uncurve:

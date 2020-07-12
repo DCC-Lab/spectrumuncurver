@@ -6,12 +6,15 @@ from matplotlib import pyplot as plt
 from tkinter.filedialog import asksaveasfilename
 from unittest import mock
 import io
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class SpectrumUncurver:
 
-    def __init__(self, imagePath: str):
-        self.spectrumImagePath = imagePath
+    def __init__(self):
+        self.spectrumImagePath = None
         self.curbaturePeakZoneX = None
         self.pixelList = None
         self.curbaturePeakZoneY = None
@@ -32,7 +35,6 @@ class SpectrumUncurver:
         self.shiftedImage = None
         self.shiftedPILImage = None
         self.fittedPILImage = None
-        self.load_image()
         log.info("Class created successfully.")
 
     def save_image(self, imageFile:Image):
@@ -88,7 +90,8 @@ class SpectrumUncurver:
         fig, ax = plt.subplot()
         ax.plot(self.gaussianPeakPos)
 
-    def load_image(self):
+    def load_image(self, imagePath: str):
+        self.spectrumImagePath = imagePath
         self.imPIL = Image.open(self.spectrumImagePath)
         self.imArray = np.array(self.imPIL)
         self.imMAT = plt.imread(self.spectrumImagePath)
@@ -194,4 +197,8 @@ class SpectrumUncurver:
 
 
 if __name__ == "__main__":
-    pass
+    corrector = SpectrumUncurver()
+    corrector.load_image('./data/glycerol_06_06_2020_2.tif')
+    corrector.uncurve_spectrum_image([640, 700], [0, 400], 'gaussian')
+    corrector.show_curved_image()
+    corrector.show_uncurved_image()
