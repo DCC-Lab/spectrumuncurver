@@ -9,8 +9,8 @@ rm dist/*; python setup.py sdist bdist_wheel; python -m twine upload dist/*
 
 
 setuptools.setup(
-    name="spectrum-uncurver",
-    version="0.1.4",
+    name="spectrumuncurver",
+    version="0.1.5",
     url="https://github.com/DCC-Lab/spectrum-uncurver",
     author="Marc-André Vigneault",
     author_email="marc-andre.vigneault.02@hotmail.com",

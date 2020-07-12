@@ -1,6 +1,6 @@
 import logging
 import logging.config
-from .spectrumUncurver import *
+from .spectrumuncurver import *
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

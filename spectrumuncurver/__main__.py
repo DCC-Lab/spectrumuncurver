@@ -1,8 +1,8 @@
-from .spectrumUncurver import *
+from .spectrumuncurver import *
 import argparse
 
 
-parser = argparse.ArgumentParser(description="Tool to uncurve and graph spectrometer data.", prog="python -m spectrum-uncurver")
+parser = argparse.ArgumentParser(description="Tool to uncurve and graph spectrometer data.", prog="python -m spectrumuncurver")
 
 parser.add_argument('imagePath', type=str,
                     help='The image that will be processed.')

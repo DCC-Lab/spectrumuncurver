@@ -1,5 +1,5 @@
 from unittest import TestCase
-from .. .spectrumUncurver import SpectrumUncurver
+from .. .spectrumuncurver import SpectrumUncurver
 from PIL import Image
 from scipy.optimize import curve_fit
 import numpy as np
