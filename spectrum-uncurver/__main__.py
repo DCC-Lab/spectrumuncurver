@@ -1,4 +1,4 @@
-from .spectrumUncurver import SpectrumUncurver
+from .spectrumUncurver import *
 import argparse
 
 
