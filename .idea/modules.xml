@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SERS-project.iml" filepath="$PROJECT_DIR$/.idea/SERS-project.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/spectrum-uncurver.iml" filepath="$PROJECT_DIR$/.idea/spectrum-uncurver.iml" />
     </modules>
   </component>
 </project>

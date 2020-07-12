@@ -1,17 +1,18 @@
 from unittest import TestCase
-from spectroCurbatureCorrection import SpectrumProcessor
+from .. .spectrumUncurver import SpectrumUncurver
 from PIL import Image
 from scipy.optimize import curve_fit
 import numpy as np
 from matplotlib import pyplot as plt
 
+
 class TestSpectrumProcessor(TestCase):
     def setUp(self) -> None:
-        self.processor = SpectrumProcessor('data/glycerol_06_06_2020_2.tif', [620, 670], [0, 398])
+        self.processor = SpectrumUncurver('data/glycerol_06_06_2020_2.tif', [620, 670], [0, 398])
 
     def test_load_image(self):
         self.processor.load_image()
-        loadedImage = Image.open('data/glycerol_06_06_2020_2.tif')
+        loadedImage = Image.open('../data/glycerol_06_06_2020_2.tif')
         loadedArray = np.array(loadedImage)
         self.assertEqual(loadedArray, self.processor.imArray)
 
