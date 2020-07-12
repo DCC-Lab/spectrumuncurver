@@ -11,7 +11,16 @@ Anyone who is willing to contribute is welcome to do so.
 
 email: marc-andre.vigneault.02@hotmail.com
 
+
+
+### installing the package
+
+you can simply use `pip install spectrumuncurver` or for those without a `pip` link to `PATH`, `python -m pip install specturmuncurver`.
+
+
+
 ## using the package
+
 To use the package, you have to follow 3 or 4 steps depending on your goal.
 1. Create a ``su = SpectrumUncurver()`` object.
 2. Load an image into the object. ``su.load_image(imagePath: str)``
