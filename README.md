@@ -55,6 +55,6 @@ The package has (**or will have soon**) the following function:
 
 Here is some results achieved with this package:
 
-![image-20200712131837084](README.assets/firstResult.png)
+![image-20200712131837084](https://github.com/DCC-Lab/spectrumuncurver/raw/master/README.assets/firstResult.png)
 
 
