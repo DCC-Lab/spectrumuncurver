@@ -24,7 +24,8 @@ you can simply use `pip install spectrumuncurver` or for those without a `pip` l
 To use the package, you have to follow 3 or 4 steps depending on your goal.
 1. Create a ``su = SpectrumUncurver()`` object.
 2. Load an image into the object. ``su.load_image(imagePath: str)``
-3. Uncurve the image and choose the algorithm. ``su.uncurve_spectrum_image(xlim:List, ylim:List, method='gaussian', fitted=False)``. 
+3. Uncurve the image and choose the algorithm. 
+``su.uncurve_spectrum_image(xlim:List, ylim:List, method='gaussian', fitted=False)``. 
 You can choose from the following algorithms: ``maximum``, `gaussian`, `quadratic`. The ``fitted`` parameter will polyfit the found peaks to ensure
 smooth uncurving, though not perfectly implemented.
 4. Choose which function interests you from the following functions:
