@@ -50,6 +50,7 @@ class SpectrumUncurver:
             else:
                 log.error(generalErrorMessage + str(e))
 
+    '''IMAGE FUNCTIONS'''
     def save_uncurved_image(self):
         generalErrorMessage = "File was not saved. "
         try:
@@ -65,6 +66,7 @@ class SpectrumUncurver:
     def save_image_with_fit(self):
         # TODO: make the superposition of the fit work
         pass
+        #
         # with patch('matplotlib.pyplot.show') as p:
         #     self.show_image_with_fit()
         #     self.canvas.draw()
@@ -87,6 +89,19 @@ class SpectrumUncurver:
 
     def show_curved_image(self):
         self.imPIL.show()
+
+    '''PLOT FUNCTIONS'''
+    def sum_all_columns(self):
+        print(self.shiftedImage[1])
+        self.spectrum_data = np.zeros(1, len(self.shiftedImage[1]))
+
+        for xpos in range(len(self.shiftedImage[1])):
+            self.spectrum_data[xpos] = sum(self.shiftedImage[::][xpos])
+
+        print(self.spectrum_data)
+
+    def save_uncurved_plot(self):
+        pass
 
     def show_curvature(self):
         fig, ax = plt.subplot()
@@ -203,4 +218,4 @@ if __name__ == "__main__":
     corrector = SpectrumUncurver()
     corrector.load_image('./data/glycerol_06_06_2020_2.tif')
     corrector.uncurve_spectrum_image([640, 700], [0, 400], 'gaussian')
-    corrector.save_image_with_fit()
+    corrector.sum_all_columns()

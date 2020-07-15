@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 
 class TestSpectrumProcessor(TestCase):
     def setUp(self) -> None:
-        self.processor = SpectrumUncurver('data/glycerol_06_06_2020_2.tif', [620, 670], [0, 398])
+        self.processor = SpectrumUncurver()
 
     def test_load_image(self):
         self.processor.load_image()
