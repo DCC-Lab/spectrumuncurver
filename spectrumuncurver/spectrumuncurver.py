@@ -12,6 +12,11 @@ import logging
 log = logging.getLogger(__name__)
 
 
+# class SpectrumImage(Image):
+#     def __init__(self):
+#         super(SpectrumImage, self).__init__()
+        
+
 class SpectrumUncurver:
 
     def __init__(self):
@@ -19,11 +24,10 @@ class SpectrumUncurver:
         self.curvaturePeakZoneX = None
         self.pixelList = None
         self.curvaturePeakZoneY = None
-        self.imPIL = None
+        self.imPILCurved = None
         self.imMAT = None
-        self.imArray = None
-        self.imPlot = None
-        self.method = 'maximum'
+        self.imArrayCurved = None
+        self.methods = ['maximum',]
         self.figure = plt.Figure()
         self.ax = self.figure.gca()
         self.canvas = FigureCanvas(self.figure)
@@ -49,6 +53,9 @@ class SpectrumUncurver:
                 log.error("unknown file extension." + generalErrorMessage)
             else:
                 log.error(generalErrorMessage + str(e))
+
+    def sum_curved_vertical_pixels(self):
+        pass
 
     '''IMAGE FUNCTIONS'''
     def save_uncurved_image(self):
@@ -79,7 +86,7 @@ class SpectrumUncurver:
         self.shiftedPILImage.show()
 
     def show_image_with_fit(self):
-        self.ax.imshow(self.imArray, cmap='gray')
+        self.ax.imshow(self.imArrayCurved, cmap='gray')
         self.ax.scatter([self.gaussianPeakPos], [np.linspace(self.curvaturePeakZoneY[0], self.curvaturePeakZoneY[1], self.curvaturePeakZoneY[1]-self.curvaturePeakZoneY[0])], c='r', s=0.2, label="Gaussian fit")
         self.ax.scatter([self.maximumPeakPos], [np.linspace(self.curvaturePeakZoneY[0], self.curvaturePeakZoneY[1],
                                                          self.curvaturePeakZoneY[1] - self.curvaturePeakZoneY[0])],
@@ -88,17 +95,20 @@ class SpectrumUncurver:
         plt.show()
 
     def show_curved_image(self):
-        self.imPIL.show()
+        self.imPILCurved.show()
 
     '''PLOT FUNCTIONS'''
     def sum_all_columns(self):
-        print(self.shiftedImage[1])
-        self.spectrum_data = np.zeros(1, len(self.shiftedImage[1]))
+        #print(len(self.shiftedImage[0]))
+        self.spectrum_data = np.zeros((1, len(self.shiftedImage[1])))
+        #print(self.spectrum_data)
 
-        for xpos in range(len(self.shiftedImage[1])):
-            self.spectrum_data[xpos] = sum(self.shiftedImage[::][xpos])
+        for xpos in range(0, len(self.shiftedImage[1])):
+            #print(self.shiftedImage[:, xpos])
+            self.spectrum_data[0, xpos] = sum(self.shiftedImage[:, xpos])
 
-        print(self.spectrum_data)
+        self.ax.scatter(np.linspace(0, len(self.spectrum_data[0]), len(self.spectrum_data[0])), self.spectrum_data[0])
+        plt.show()
 
     def save_uncurved_plot(self):
         pass
@@ -109,10 +119,9 @@ class SpectrumUncurver:
 
     def load_image(self, imagePath: str):
         self.spectrumImagePath = imagePath
-        self.imPIL = Image.open(self.spectrumImagePath)
-        self.imArray = np.array(self.imPIL)
+        self.imPILCurved = Image.open(self.spectrumImagePath)
+        self.imArrayCurved = np.array(self.imPILCurved)
         self.imMAT = plt.imread(self.spectrumImagePath)
-        self.imPlot = plt.imshow(self.imMAT)
 
     def uncurve_spectrum_image(self, xlim: List, ylim: List, method='maximum'):
         self.curvaturePeakZoneX = xlim
@@ -132,7 +141,7 @@ class SpectrumUncurver:
     def find_peak_position_on_each_row(self):
         for ypos in range(self.curvaturePeakZoneY[0], self.curvaturePeakZoneY[1]):
 
-            sectionyData = self.imArray[ypos][self.curvaturePeakZoneX[0]:self.curvaturePeakZoneX[1]+1]   # +1 because it doesn't include the given index
+            sectionyData = self.imArrayCurved[ypos][self.curvaturePeakZoneX[0]:self.curvaturePeakZoneX[1]+1]   # +1 because it doesn't include the given index
             sectionxData = np.linspace(self.curvaturePeakZoneX[0], self.curvaturePeakZoneX[1], len(sectionyData))
             log.debug("sectionxData:", sectionxData)
             pars, cov = curve_fit(f=self.gaussian, xdata=sectionxData, ydata=sectionyData,
@@ -159,35 +168,35 @@ class SpectrumUncurver:
         log.info("maximum peak average position:{}".format(self.maximumPixelDeviationX))
 
     def correct_maximum_deviation_on_each_row(self):
-        self.shiftedImage = np.zeros(shape=(self.imPIL.height, self.imPIL.width))
+        self.shiftedImage = np.zeros(shape=(self.imPILCurved.height, self.imPILCurved.width))
         for ypos, i in enumerate(range(self.curvaturePeakZoneY[0], self.curvaturePeakZoneY[1])):
             corr = -self.maximumPixelDeviationX[i]
-            log.debug(self.imArray[ypos][0:-corr])
+            log.debug(self.imArrayCurved[ypos][0:-corr])
             if corr >= 1:
-                self.shiftedImage[ypos][corr:] = self.imArray[ypos][0:-corr]
+                self.shiftedImage[ypos][corr:] = self.imArrayCurved[ypos][0:-corr]
             elif corr < 0:
-                self.shiftedImage[ypos][0:corr-1] = self.imArray[ypos][-corr:-1]
+                self.shiftedImage[ypos][0:corr-1] = self.imArrayCurved[ypos][-corr:-1]
             else:
-                self.shiftedImage[ypos][::] = self.imArray[ypos][::]
+                self.shiftedImage[ypos][::] = self.imArrayCurved[ypos][::]
         self.shiftedImage = self.shiftedImage/np.max(self.shiftedImage)
         self.shiftedPILImage = Image.fromarray(np.uint32(self.shiftedImage*63555))
         return self.shiftedImage
 
     def correct_gaussian_deviation_on_each_row(self):
-        self.shiftedImage = np.zeros(shape=(self.imPIL.height, self.imPIL.width))
+        self.shiftedImage = np.zeros(shape=(self.imPILCurved.height, self.imPILCurved.width))
         for ypos, i in enumerate(range(self.curvaturePeakZoneY[0], self.curvaturePeakZoneY[1])):
             corr = -self.gaussianPixelDeviationX[i]
-            log.debug(self.imArray[ypos][0:-corr])
+            log.debug(self.imArrayCurved[ypos][0:-corr])
 
             log.debug("YPOS:", ypos)
-            log.debug("ARRAY", self.imArray[ypos])
+            log.debug("ARRAY", self.imArrayCurved[ypos])
             log.debug("DEV", corr)
             if corr >= 1:
-                self.shiftedImage[ypos][corr:] = self.imArray[ypos][0:-corr]
+                self.shiftedImage[ypos][corr:] = self.imArrayCurved[ypos][0:-corr]
             elif corr < 0:
-                self.shiftedImage[ypos][0:corr-1] = self.imArray[ypos][-corr:-1]
+                self.shiftedImage[ypos][0:corr-1] = self.imArrayCurved[ypos][-corr:-1]
             else:
-                self.shiftedImage[ypos][::] = self.imArray[ypos][::]
+                self.shiftedImage[ypos][::] = self.imArrayCurved[ypos][::]
 
         return self.shiftedImage
 
@@ -218,4 +227,4 @@ if __name__ == "__main__":
     corrector = SpectrumUncurver()
     corrector.load_image('./data/glycerol_06_06_2020_2.tif')
     corrector.uncurve_spectrum_image([640, 700], [0, 400], 'gaussian')
-    corrector.sum_all_columns()
+    corrector.show_image_with_fit()
