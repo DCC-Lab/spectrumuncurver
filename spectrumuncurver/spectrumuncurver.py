@@ -128,6 +128,10 @@ class SpectrumUncurver:
         self.imArrayCurved = np.array(self.imPILCurved)
         self.imMAT = plt.imread(self.spectrumImagePath)
 
+    def load_array_image(self, imageArray):
+        self.imArrayCurved = imageArray
+        self.imMAT = plt.imread(self.spectrumImagePath)
+
     def uncurve_spectrum_image(self, xlim: List, ylim: List, method='maximum'):
         self.curvaturePeakZoneX = xlim
         self.curvaturePeakZoneY = ylim
