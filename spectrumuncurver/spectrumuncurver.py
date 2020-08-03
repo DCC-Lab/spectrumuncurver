@@ -117,9 +117,14 @@ class SpectrumUncurver:
         fig, ax = plt.subplot()
         ax.plot(self.gaussianPeakPos)
 
-    def load_image(self, imagePath: str):
+    def load_image_from_path(self, imagePath: str):
         self.spectrumImagePath = imagePath
         self.imPILCurved = Image.open(self.spectrumImagePath)
+        self.imArrayCurved = np.array(self.imPILCurved)
+        self.imMAT = plt.imread(self.spectrumImagePath)
+
+    def load_PIL_image(self, image):
+        self.imPILCurved = image
         self.imArrayCurved = np.array(self.imPILCurved)
         self.imMAT = plt.imread(self.spectrumImagePath)
 
