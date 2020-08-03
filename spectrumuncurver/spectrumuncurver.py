@@ -25,9 +25,8 @@ class SpectrumUncurver:
         self.pixelList = None
         self.curvaturePeakZoneY = None
         self.imPILCurved = None
-        self.imMAT = None
         self.imArrayCurved = None
-        self.methods = ['maximum',]
+        self.methods = ['maximum', 'gaussian']
         self.figure = plt.Figure()
         self.ax = self.figure.gca()
         self.canvas = FigureCanvas(self.figure)
@@ -121,16 +120,13 @@ class SpectrumUncurver:
         self.spectrumImagePath = imagePath
         self.imPILCurved = Image.open(self.spectrumImagePath)
         self.imArrayCurved = np.array(self.imPILCurved)
-        self.imMAT = plt.imread(self.spectrumImagePath)
 
     def load_PIL_image(self, image):
         self.imPILCurved = image
         self.imArrayCurved = np.array(self.imPILCurved)
-        self.imMAT = plt.imread(self.spectrumImagePath)
 
     def load_array_image(self, imageArray):
         self.imArrayCurved = imageArray
-        self.imMAT = plt.imread(self.spectrumImagePath)
 
     def uncurve_spectrum_image(self, xlim: List, ylim: List, method='maximum'):
         self.curvaturePeakZoneX = xlim
